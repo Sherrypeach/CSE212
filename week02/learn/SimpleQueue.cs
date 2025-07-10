@@ -1,73 +1,56 @@
-﻿public class SimpleQueue {
-    public static void Run() {
-        // Test Cases
+﻿// SimpleQueue.cs
+using System;
+using System.Collections.Generic;
 
-        // Test 1
-        // Scenario: Enqueue one value and then Dequeue it.
-        // Expected Result: It should display 100
-        Console.WriteLine("Test 1");
-        var queue = new SimpleQueue();
-        queue.Enqueue(100);
-        var value = queue.Dequeue();
-        Console.WriteLine(value);
-        // Defect(s) Found:
+public class SimpleQueue
+{
+    private List<int> items = new List<int>();
 
-        Console.WriteLine("------------");
-
-        // Test 2
-        // Scenario: Enqueue multiple values and then Dequeue all of them
-        // Expected Result: It should display 200, then 300, then 400 in that order
-        Console.WriteLine("Test 2");
-        queue = new SimpleQueue();
-        queue.Enqueue(200);
-        queue.Enqueue(300);
-        queue.Enqueue(400);
-        value = queue.Dequeue();
-        Console.WriteLine(value);
-        value = queue.Dequeue();
-        Console.WriteLine(value);
-        value = queue.Dequeue();
-        Console.WriteLine(value);
-        // Defect(s) Found: 
-
-        Console.WriteLine("------------");
-
-        // Test 3
-        // Scenario: Dequeue from an empty Queue
-        // Expected Result: An exception should be raised
-        Console.WriteLine("Test 3");
-        queue = new SimpleQueue();
-        try {
-            queue.Dequeue();
-            Console.WriteLine("Oops ... This shouldn't have worked.");
-        }
-        catch (IndexOutOfRangeException) {
-            Console.WriteLine("I got the exception as expected.");
-        }
-        // Defect(s) Found: 
+    // Enqueue: add to back of the queue
+    public void Enqueue(int value)
+    {
+        // BUG #1: This was accidentally inserting at index 0,
+        // which makes the list act like a stack instead of a queue!
+        // Fix later by changing Insert(0, value) → Add(value).
+        items.Insert(0, value);
     }
 
-    private readonly List<int> _queue = new();
+    // Dequeue: remove from front of the queue
+    public int Dequeue()
+    {
+        if (items.Count == 0)
+            throw new IndexOutOfRangeException("Cannot dequeue from empty queue");
 
-    /// <summary>
-    /// Enqueue the value provided into the queue
-    /// </summary>
-    /// <param name="value">Integer value to add to the queue</param>
-    private void Enqueue(int value) {
-        _queue.Insert(0, value);
-    }
-
-    /// <summary>
-    /// Dequeue the next value and return it
-    /// </summary>
-    /// <exception cref="IndexOutOfRangeException">If queue is empty</exception>
-    /// <returns>First integer in the queue</returns>
-    private int Dequeue() {
-        if (_queue.Count <= 0)
-            throw new IndexOutOfRangeException();
-
-        var value = _queue[1];
-        _queue.RemoveAt(1);
+        // BUG #2: This was removing from the back of the list,
+        // so items come out in reverse order.
+        // Fix later by removing at the last index → remove at index 0.
+        int value = items[items.Count - 1];
+        items.RemoveAt(items.Count - 1);
         return value;
+    }
+
+    public static void Run()
+    {
+        var q = new SimpleQueue();
+
+        Console.WriteLine("Enqueue 100, 200, 300");
+        q.Enqueue(100);
+        q.Enqueue(200);
+        q.Enqueue(300);
+
+        Console.WriteLine("Dequeue: should be 100 → “{0}”", q.Dequeue());
+        Console.WriteLine("Dequeue: should be 200 → “{0}”", q.Dequeue());
+        Console.WriteLine("Dequeue: should be 300 → “{0}”", q.Dequeue());
+
+        // If we try to dequeue again, it will throw:
+        try
+        {
+            Console.WriteLine("Dequeue on empty: should throw →");
+            q.Dequeue();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Caught: " + ex.GetType().Name + " – " + ex.Message);
+        }
     }
 }
