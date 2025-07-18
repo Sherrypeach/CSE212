@@ -19,56 +19,138 @@ public static class SetsAndMaps
     /// that there were no duplicates) and therefore should not be returned.
     /// </summary>
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
-    public static string[] FindPairs(string[] words)
+/// <summary>
+/// The words parameter contains a list of two-character 
+/// words (lowercase, no duplicates). Using sets, this function finds
+/// all symmetric pairs. For example, "am" and "ma" form a pair.
+/// Returns an array of strings like "am & ma".
+/// 
+/// Constraints:
+/// - O(n) time using a HashSet
+/// - Ignore words like "aa" (letters are the same)
+/// - Order of output and pair words doesn't matter
+/// </summary>
+public static string[] FindPairs(string[] words)
+{
+    var result = new List<string>();              // List to store the final output
+    var wordSet = new HashSet<string>(words);     // Use a HashSet for O(1) lookups
+    var usedPairs = new HashSet<string>();        // To avoid duplicate entries like "ab & ba" and "ba & ab"
+
+    foreach (string word in words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        // Skip words where both characters are the same (e.g., "aa")
+        if (word[0] == word[1])
+            continue;
+
+        // Reverse the word, e.g., "am" => "ma"
+        string reversed = new string(new[] { word[1], word[0] });
+
+        // Create a canonical form of the pair by sorting alphabetically.
+        // This prevents adding both "ab & ba" and "ba & ab" separately.
+        string canonical = word.CompareTo(reversed) < 0
+            ? $"{word} & {reversed}"
+            : $"{reversed} & {word}";
+
+        // If the reversed word exists and we haven't used this pair yet
+        if (wordSet.Contains(reversed) && !usedPairs.Contains(canonical))
+        {
+            result.Add(canonical);        // Add to result
+            usedPairs.Add(canonical);     // Mark this pair as used
+        }
     }
 
-    /// <summary>
-    /// Read a census file and summarize the degrees (education)
-    /// earned by those contained in the file.  The summary
-    /// should be stored in a dictionary where the key is the
-    /// degree earned and the value is the number of people that 
-    /// have earned that degree.  The degree information is in
-    /// the 4th column of the file.  There is no header row in the
-    /// file.
-    /// </summary>
-    /// <param name="filename">The name of the file to read</param>
-    /// <returns>fixed array of divisors</returns>
-    public static Dictionary<string, int> SummarizeDegrees(string filename)
+    // Return the list of symmetric pairs as an array
+    return result.ToArray();
+}
+
+
+  /// <summary>
+/// Read a census file and summarize the degrees (education)
+/// earned by those contained in the file. The summary
+/// is stored in a dictionary where the key is the degree
+/// and the value is the number of people with that degree.
+/// Degree is in the 4th column (index 3). No header row.
+/// </summary>
+public static Dictionary<string, int> SummarizeDegrees(string filename)
+{
+    var degrees = new Dictionary<string, int>();
+
+    // Read each line from the file
+    foreach (var line in File.ReadLines(filename))
     {
-        var degrees = new Dictionary<string, int>();
-        foreach (var line in File.ReadLines(filename))
+        var fields = line.Split(","); // Split the line by commas
+
+        if (fields.Length >= 4) // Make sure there are at least 4 fields
         {
-            var fields = line.Split(",");
-            // TODO Problem 2 - ADD YOUR CODE HERE
+            string degree = fields[3].Trim(); // Get the 4th column (index 3)
+
+            // If degree already exists in dictionary, increment the count
+            if (degrees.ContainsKey(degree))
+            {
+                degrees[degree]++;
+            }
+            else
+            {
+                // Otherwise, add it with a count of 1
+                degrees[degree] = 1;
+            }
+        }
+    }
+
+    return degrees;
+}
+
+
+ /// <summary>
+/// Determine if 'word1' and 'word2' are anagrams.
+/// An anagram has the exact same letters with the same frequency.
+/// Spaces and letter casing should be ignored.
+/// </summary>
+public static bool IsAnagram(string word1, string word2)
+{
+    // Remove spaces and convert to lowercase to normalize input
+    word1 = word1.Replace(" ", "").ToLower();
+    word2 = word2.Replace(" ", "").ToLower();
+
+    // If lengths don’t match, they can't be anagrams
+    if (word1.Length != word2.Length)
+        return false;
+
+    // Dictionary to count letter frequencies in word1
+    var letterCounts = new Dictionary<char, int>();
+
+    // Count each letter in word1
+    foreach (char c in word1)
+    {
+        if (letterCounts.ContainsKey(c))
+        {
+            letterCounts[c]++;
+        }
+        else
+        {
+            letterCounts[c] = 1;
+        }
+    }
+
+    // Subtract letter counts based on word2
+    foreach (char c in word2)
+    {
+        if (!letterCounts.ContainsKey(c))
+        {
+            return false; // Letter in word2 not found in word1
         }
 
-        return degrees;
+        letterCounts[c]--;
+
+        if (letterCounts[c] < 0)
+        {
+            return false; // More of this letter in word2 than in word1
+        }
     }
 
-    /// <summary>
-    /// Determine if 'word1' and 'word2' are anagrams.  An anagram
-    /// is when the same letters in a word are re-organized into a 
-    /// new word.  A dictionary is used to solve the problem.
-    /// 
-    /// Examples:
-    /// is_anagram("CAT","ACT") would return true
-    /// is_anagram("DOG","GOOD") would return false because GOOD has 2 O's
-    /// 
-    /// Important Note: When determining if two words are anagrams, you
-    /// should ignore any spaces.  You should also ignore cases.  For 
-    /// example, 'Ab' and 'Ba' should be considered anagrams
-    /// 
-    /// Reminder: You can access a letter by index in a string by 
-    /// using the [] notation.
-    /// </summary>
-    public static bool IsAnagram(string word1, string word2)
-    {
-        // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
-    }
+    // If all values in the dictionary are zero, it's an anagram
+    return true;
+}
 
     /// <summary>
     /// This function will read JSON (Javascript Object Notation) data from the 
