@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public class BinarySearchTree : IEnumerable<int>
 {
@@ -11,14 +13,15 @@ public class BinarySearchTree : IEnumerable<int>
     {
         // Create new node
         Node newNode = new(value);
-        // If the list is empty, then point both head and tail to the new node.
+
+        // If the tree is empty, the new node is the root.
         if (_root is null)
         {
             _root = newNode;
         }
-        // If the list is not empty, then only head will be affected.
         else
         {
+            // Otherwise, delegate to the Node.Insert() logic (which ignores duplicates).
             _root.Insert(value);
         }
     }
@@ -43,7 +46,7 @@ public class BinarySearchTree : IEnumerable<int>
     }
 
     /// <summary>
-    /// Iterate forward through the BST
+    /// Iterate forward through the BST (smallest -> largest)
     /// </summary>
     public IEnumerator<int> GetEnumerator()
     {
@@ -55,6 +58,7 @@ public class BinarySearchTree : IEnumerable<int>
         }
     }
 
+    // In-order traversal: Left, Node, Right
     private void TraverseForward(Node? node, List<int> values)
     {
         if (node is not null)
@@ -66,7 +70,7 @@ public class BinarySearchTree : IEnumerable<int>
     }
 
     /// <summary>
-    /// Iterate backward through the BST.
+    /// Iterate backward through the BST (largest -> smallest)
     /// </summary>
     public IEnumerable Reverse()
     {
@@ -78,9 +82,18 @@ public class BinarySearchTree : IEnumerable<int>
         }
     }
 
+    // PROBLEM 3: reverse in-order: Right, Node, Left
     private void TraverseBackward(Node? node, List<int> values)
     {
-        // TODO Problem 3
+        // Visit right subtree first (bigger numbers),
+        // then this node,
+        // then left subtree (smaller numbers).
+        if (node is not null)
+        {
+            TraverseBackward(node.Right, values);
+            values.Add(node.Data);
+            TraverseBackward(node.Left, values);
+        }
     }
 
     /// <summary>
